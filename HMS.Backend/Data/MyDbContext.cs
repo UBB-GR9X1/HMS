@@ -171,8 +171,20 @@ namespace HMS.Backend.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // voodoo ^^^
-            // some of them might not be required
+            // Configure many-to-many relationship between Equipment and Room
+            modelBuilder.Entity<Equipment>()
+                .HasMany(e => e.Rooms)
+                .WithMany(r => r.Equipments)
+                .UsingEntity(
+                    "EquipmentRoom",
+                    l => l.HasOne(typeof(Room))
+                        .WithMany()
+                        .HasForeignKey("RoomsId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    r => r.HasOne(typeof(Equipment))
+                        .WithMany()
+                        .HasForeignKey("EquipmentsId")
+                        .OnDelete(DeleteBehavior.Cascade));
 
             base.OnModelCreating(modelBuilder);
         }

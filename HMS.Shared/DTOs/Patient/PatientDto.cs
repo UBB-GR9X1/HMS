@@ -15,7 +15,7 @@ namespace HMS.Shared.DTOs.Patient
 
         public float Height { get; set; }
 
-        public DateTime BirthDate { get; set; }
+        public DateOnly BirthDate { get; set; }
 
         public string Address { get; set; } = null!;
 

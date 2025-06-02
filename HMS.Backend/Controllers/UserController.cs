@@ -105,6 +105,9 @@ namespace HMS.Backend.Controllers
             if (user == null)
                 return NotFound("User not found");
 
+            if (!PasswordHasher.VerifyPassword(password, user.Password))
+                return Unauthorized("Invalid password");
+
             var token = tokenProvider.Create(user.Id);
 
             return MapToDto(user, token);

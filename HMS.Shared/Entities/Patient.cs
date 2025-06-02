@@ -28,7 +28,7 @@ namespace HMS.Shared.Entities
         public float Height { get; set; }
 
         [Required]
-        public DateTime BirthDate { get; set; }
+        public DateOnly BirthDate { get; set; }
 
         [Required]
         public string Address { get; set; }
