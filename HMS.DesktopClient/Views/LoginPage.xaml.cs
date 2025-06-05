@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using HMS.DesktopClient.APIClients;
+using HMS.DesktopClient.ViewModels;
 using HMS.Shared.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -61,6 +63,14 @@ namespace HMS.DesktopClient.Views
             // Navigate back to the main page
             var homePage = new HomePage();
             homePage.Activate();
+            this.Close();
+        }
+
+        private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to the registration page
+            var createAccountPage = new CreateAccountPage();
+            createAccountPage.Activate();
             this.Close();
         }
     }
