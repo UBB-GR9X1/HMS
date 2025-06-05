@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\CreateAccountPage.xaml" />
     <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
   </ItemGroup>
@@ -47,6 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HMS.Shared\HMS.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CreateAccountPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\LoginPage.xaml">
