@@ -102,27 +102,14 @@ namespace HMS.Backend.Controllers
         /// <response code="201">Returns the newly created patient.</response>
         /// <response code="400">If the input data is invalid.</response>
         [HttpPost]
-        [Authorize]
         [ProducesResponseType(typeof(Patient), 201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] Patient patient)
         {
-            var patient = new Patient
+            if (!ModelState.IsValid)
             {
-                Email = dto.Email,
-                Password = dto.Password,
-                Name = dto.Name,
-                CNP = dto.CNP,
-                PhoneNumber = dto.PhoneNumber,
-                Role = Enum.Parse<HMS.Shared.Enums.UserRole>(dto.Role),
-                BloodType = Enum.Parse<HMS.Shared.Enums.BloodType>(dto.BloodType),
-                EmergencyContact = dto.EmergencyContact,
-                Allergies = dto.Allergies,
-                Weight = dto.Weight,
-                Height = dto.Height,
-                BirthDate = dto.BirthDate,
-                Address = dto.Address
-            };
+                return BadRequest(ModelState);
+            }
 
             var createdPatient = await _patientRepository.AddAsync(patient);
             return CreatedAtAction(nameof(GetById), new { id = createdPatient.Id }, createdPatient);
