@@ -25,7 +25,7 @@ namespace HMS.Shared.Proxies.Implementations
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.Preserve,
+                ReferenceHandler = ReferenceHandler.Ignore,
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
         }
@@ -37,7 +37,7 @@ namespace HMS.Shared.Proxies.Implementations
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.Preserve,
+                ReferenceHandler = ReferenceHandler.Ignore,
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
         }
@@ -152,4 +152,4 @@ namespace HMS.Shared.Proxies.Implementations
             }
         }
     }
-} 
+}

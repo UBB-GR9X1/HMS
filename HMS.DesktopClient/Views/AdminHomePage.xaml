@@ -12,8 +12,10 @@
     <Grid>
 
         <!-- Logs Button -->
-        <Button x:Name="Logs" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" 
+        <Button x:Name="Logs" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
                 Content="Logs page" Click="LogsButton_Click" 
                 HorizontalAlignment="Left" Margin="0,20,0,0"/>
+
+        <Button Content="Appointments" Click="appointmentsButton_Click" Margin="50, 60, 0, 0"/>
     </Grid>
 </Window>

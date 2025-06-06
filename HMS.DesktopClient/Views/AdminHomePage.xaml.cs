@@ -1,3 +1,4 @@
+using HMS.DesktopClient.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -21,8 +22,9 @@ namespace HMS.DesktopClient.Views
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class AdminHomePage : Window
+    public partial class AdminHomePage : Window
     {
+        //private ViewModels.AppointmentPage appointmentPage;
         public AdminHomePage()
         {
             this.InitializeComponent();
@@ -32,6 +34,12 @@ namespace HMS.DesktopClient.Views
         {
             var adminDashboard = new LogsPage();
             adminDashboard.Activate();
+        }
+
+        private void appointmentsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var appointmentsPage = new AppointmentPage(App.CurrentUser);
+            appointmentsPage.Activate();
         }
     }
 }

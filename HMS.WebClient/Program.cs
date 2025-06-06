@@ -31,11 +31,11 @@ builder.Services.AddScoped<IMedicalRecordRepository>(provider =>
     return new MedicalRecordProxy(httpClient, token);
 });
 
-builder.Services.AddScoped<IAppointmentRepository>(provider =>
+builder.Services.AddScoped((Func<IServiceProvider, IAppointmentRepository>)(provider =>
 {
     var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
     return new AppointmentProxy(httpClient, token);
-});
+}));
 
 builder.Services.AddScoped<IScheduleRepository>(provider =>
 {
