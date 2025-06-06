@@ -1,0 +1,45 @@
+<Window
+    x:Class="HMS.DesktopClient.Views.SchedulePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:HMS.DesktopClient.ViewModels"
+    xmlns:dto="using:HMS.Shared.DTOs"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:dataGrid1="using:CommunityToolkit.WinUI.UI.Controls"
+    mc:Ignorable="d"
+    Title="Schedules">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Schedules" FontSize="24" FontWeight="Bold" Margin="10" HorizontalAlignment="Center"/>
+
+        <!-- Input fields for Add/Edit -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
+            <TextBlock Text="Doctor ID:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Width="100" Text="{x:Bind ViewModel.EditingDoctorId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Shift ID:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <TextBox Width="100" Text="{x:Bind ViewModel.EditingShiftId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <!-- CRUD Buttons -->
+            <Button Content="Add Schedule" Margin="20,0,5,0" Command="{x:Bind ViewModel.AddScheduleCommand}"/>
+            <Button Content="Update Schedule" Margin="0,0,5,0" Command="{x:Bind ViewModel.UpdateScheduleCommand}" IsEnabled="{x:Bind ViewModel.IsScheduleSelected, Mode=OneWay}"/>
+            <Button Content="Delete Schedule" Command="{x:Bind ViewModel.DeleteScheduleCommand}" IsEnabled="{x:Bind ViewModel.IsScheduleSelected, Mode=OneWay}"/>
+        </StackPanel>
+
+        <!-- DataGrid to display schedules -->
+        <dataGrid1:DataGrid Grid.Row="2"
+                            AutoGenerateColumns="True"
+                            ItemsSource="{x:Bind ViewModel.Schedules, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.SelectedSchedule, Mode=TwoWay}"
+                            Margin="10"/>
+
+    </Grid>
+</Window> 

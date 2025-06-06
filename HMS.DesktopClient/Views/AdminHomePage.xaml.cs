@@ -33,5 +33,11 @@ namespace HMS.DesktopClient.Views
             var adminDashboard = new LogsPage();
             adminDashboard.Activate();
         }
+
+        private void SchedulesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var schedulePage = new SchedulePage();
+            schedulePage.Activate();
+        }
     }
 }
