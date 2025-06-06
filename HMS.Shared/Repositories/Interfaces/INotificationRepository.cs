@@ -14,7 +14,7 @@ namespace HMS.Shared.Repositories.Interfaces
         /// Retrieves all notifications asynchronously.
         /// </summary>
         /// <returns>A collection of all notification DTOs.</returns>
-        Task<IEnumerable<NotificationDto>> GetAllAsync();
+        Task<IEnumerable<NotificationDto?>> GetAllAsync();
 
         /// <summary>
         /// Retrieves a notification by its unique identifier asynchronously.
@@ -22,6 +22,13 @@ namespace HMS.Shared.Repositories.Interfaces
         /// <param name="id">The notification's unique ID.</param>
         /// <returns>The matching notification DTO or null if not found.</returns>
         Task<NotificationDto?> GetByIdAsync(int id);
+
+        /// <summary>
+        /// Retrieves all notifications for a specific user by their ID asynchronously.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<IEnumerable<Notification>> GetByUserIdAsync(int id);
 
         /// <summary>
         /// Adds a new notification asynchronously.

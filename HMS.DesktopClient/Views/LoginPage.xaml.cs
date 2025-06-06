@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using HMS.DesktopClient.APIClients;
 using HMS.DesktopClient.Views.Patient;
+using HMS.DesktopClient.ViewModels;
 using HMS.Shared.DTOs;
 using HMS.Shared.DTOs.Patient;
 using HMS.Shared.Services;
@@ -100,6 +102,19 @@ namespace HMS.DesktopClient.Views
                 this.errorMessage.Text = ex.Message;
                 this.errorMessage.Visibility = Visibility.Visible;
             }
+        }
+            // Navigate back to the main page
+            var homePage = new HomePage();
+            homePage.Activate();
+            this.Close();
+        }
+
+        private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to the registration page
+            var createAccountPage = new CreateAccountPage();
+            createAccountPage.Activate();
+            this.Close();
         }
     }
 

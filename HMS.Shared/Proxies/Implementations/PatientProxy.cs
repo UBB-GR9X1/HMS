@@ -19,17 +19,9 @@ namespace HMS.Shared.Proxies.Implementations
         private readonly string _token;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        // Constructor cu HttpClient + token
-        public PatientProxy(HttpClient httpClient, string token)
+        public PatientProxy(HttpClient httpClient)
         {
-            _httpClient = httpClient;
-            _token = token;
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.Preserve,
-                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            };
+            this._http_client = httpClient;
         }
 
         // Constructor doar cu token (creează HttpClient cu BaseAddress)
@@ -78,15 +70,35 @@ namespace HMS.Shared.Proxies.Implementations
 
         public async Task<PatientDto> AddAsync(PatientDto patient)
         {
-            AddAuthorizationHeader();
-            string jsonContent = JsonSerializer.Serialize(patient, _jsonOptions);
-            StringContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            StringContent jsonContent = new StringContent(
+                JsonSerializer.Serialize(patient, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new JsonStringEnumConverter() }
+                }),
+                Encoding.UTF8,
+                "application/json");
 
-            HttpResponseMessage response = await _httpClient.PostAsync(_baseUrl + "patient", content);
+            HttpResponseMessage response = await this._http_client.PostAsync(this.s_base_api_url + "patient", jsonContent);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {response.StatusCode}, Body: {error}");
+            }
+
             response.EnsureSuccessStatusCode();
 
-            string responseBody = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<PatientDto>(responseBody, _jsonOptions)!;
+            string response_body = await response.Content.ReadAsStringAsync();
+
+            Patient patient_response = JsonSerializer.Deserialize<Patient>(response_body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() } // without this, the enum values will not match
+
+            });
+
+            return patient_response;
         }
 
         public async Task<bool> UpdateAsync(PatientUpdateDto patient, int id)

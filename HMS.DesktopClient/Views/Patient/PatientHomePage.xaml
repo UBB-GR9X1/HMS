@@ -28,6 +28,7 @@
                     <Button Content="Appointments"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Appointments_Click"/>
                     <Button Content="Doctors"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Doctors_Click"/>
                     <Button Content="Medical Records"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="MedicalRecords_Click"/>
+                    <Button Content="Notifications"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Notification_Click"/>
                     <Button Content="HOME" Background="Red" Foreground="White" FontWeight="Bold" Padding="10,5" BorderThickness="0" Margin="10,0,10,0" FontSize="14" Click="Home_Click"/>
                     <Button Background="Transparent" BorderThickness="0" Padding="0" Width="32" Height="32" Click="Profile_Click">
                         <Viewbox Width="28" Height="28" VerticalAlignment="Center">
