@@ -53,10 +53,24 @@ namespace HMS.Backend.Repositories.Implementations
         /// <inheritdoc />
         public async Task<bool> UpdateAsync(Doctor doctor)
         {
-            var existingDoctor = await _context.Doctors.FindAsync(doctor.Id);
+            var existingDoctor = await _context.Doctors
+                .Include(d => d.Department)
+                .FirstOrDefaultAsync(d => d.Id == doctor.Id);
+                
             if (existingDoctor == null) return false;
 
+            // Update scalar properties
             _context.Entry(existingDoctor).CurrentValues.SetValues(doctor);
+            
+            // Update Department relationship
+            if (doctor.DepartmentId != existingDoctor.DepartmentId)
+            {
+                var department = await _context.Departments.FindAsync(doctor.DepartmentId);
+                if (department == null) return false;
+                existingDoctor.Department = department;
+                existingDoctor.DepartmentId = doctor.DepartmentId;
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }

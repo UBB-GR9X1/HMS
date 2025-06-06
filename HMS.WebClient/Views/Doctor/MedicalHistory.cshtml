@@ -1,30 +1,119 @@
-@model IEnumerable<HMS.Shared.Entities.MedicalRecord>
+@model HMS.WebClient.ViewModels.DoctorMedicalHistoryViewModel
+
 @{
     ViewData["Title"] = "Medical History";
-    Layout = "_DoctorLayout";
 }
 
 <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">@Model.DoctorName</p>
+        </div>
+        <a asp-action="Profile" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Profile
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0">Medical History</h2>
-                    <a asp-action="Profile" class="btn btn-light">Back to Profile</a>
+        <!-- Recent Patients Section -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users"></i> Recent Patients
+                    </h5>
                 </div>
                 <div class="card-body">
-                    @if (!ViewData.ModelState.IsValid)
+                    @if (!Model.RecentPatients.Any())
                     {
-                        <div class="alert alert-danger">
-                            <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="text-muted">No recent patients.</div>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var patient in Model.RecentPatients)
+                            {
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">@patient.Name</h6>
+                                    <small class="text-muted">
+                                        Last Visit: @patient.LastVisit.ToString("MMM dd, yyyy")
+                                        <br />
+                                        Total Visits: @patient.VisitCount
+                                    </small>
+                                </div>
+                            }
                         </div>
                     }
+                </div>
+            </div>
+        </div>
 
-                    @if (!Model.Any())
+        <!-- All Appointments Section -->
+        <div class="col-md-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt"></i> All Appointments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.UpcomingAppointments.Any())
                     {
-                        <div class="alert alert-info">
-                            No medical records found.
+                        <div class="text-muted">No appointments found.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Patient</th>
+                                        <th>Doctor ID</th>
+                                        <th>Room</th>
+                                        <th>Procedure</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in Model.UpcomingAppointments.OrderBy(a => a.DateTime))
+                                    {
+                                        <tr>
+                                            <td>@appointment.DateTime.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td>@(ViewData[$"PatientName_{appointment.PatientId}"] ?? $"Patient {appointment.PatientId}")</td>
+                                            <td>@appointment.DoctorId</td>
+                                            <td>@appointment.RoomId</td>
+                                            <td>@appointment.ProcedureId</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Records Section -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-medical"></i> Recent Medical Records
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.MedicalRecords.Any())
+                    {
+                        <div class="text-muted">No medical records found.</div>
                     }
                     else
                     {
@@ -33,64 +122,24 @@
                                 <thead>
                                     <tr>
                                         <th>Date</th>
-                                        <th>Patient Name</th>
-                                        <th>Procedure</th>
-                                        <th>Diagnosis</th>
+                                        <th>Patient</th>
+                                        <th>Procedure ID</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var record in Model)
+                                    @foreach (var record in Model.MedicalRecords.OrderByDescending(r => r.CreatedAt))
                                     {
                                         <tr>
-                                            <td>@record.CreatedAt.ToString("g")</td>
-                                            <td>@(record.Patient?.Name ?? "Unknown")</td>
-                                            <td>@(record.Procedure?.Name ?? "Unknown")</td>
-                                            <td>@(record.Diagnosis?.Length > 50 ? record.Diagnosis.Substring(0, 47) + "..." : record.Diagnosis)</td>
+                                            <td>@(record.CreatedAt?.ToString("MMM dd, yyyy") ?? "No date")</td>
+                                            <td>@(ViewData[$"PatientName_{record.PatientId}"] ?? $"Patient {record.PatientId}")</td>
+                                            <td>@record.ProcedureId</td>
                                             <td>
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#recordModal_@record.Id">
-                                                        View Details
-                                                    </button>
-                                                </div>
+                                                <a asp-action="ViewRecord" asp-route-id="@record.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
                                             </td>
                                         </tr>
-
-                                        <!-- Modal for record details -->
-                                        <div class="modal fade" id="recordModal_@record.Id" tabindex="-1">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Medical Record Details</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <dl class="row">
-                                                            <dt class="col-sm-4">Date</dt>
-                                                            <dd class="col-sm-8">@record.CreatedAt.ToString("g")</dd>
-
-                                                            <dt class="col-sm-4">Patient Name</dt>
-                                                            <dd class="col-sm-8">@(record.Patient?.Name ?? "Unknown")</dd>
-
-                                                            <dt class="col-sm-4">Patient Contact</dt>
-                                                            <dd class="col-sm-8">@(record.Patient?.PhoneNumber ?? "N/A")</dd>
-
-                                                            <dt class="col-sm-4">Procedure</dt>
-                                                            <dd class="col-sm-8">@(record.Procedure?.Name ?? "Unknown")</dd>
-
-                                                            <dt class="col-sm-4">Department</dt>
-                                                            <dd class="col-sm-8">@(record.Procedure?.Department?.Name ?? "Unknown")</dd>
-
-                                                            <dt class="col-sm-4">Diagnosis</dt>
-                                                            <dd class="col-sm-8">@record.Diagnosis</dd>
-                                                        </dl>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     }
                                 </tbody>
                             </table>
@@ -104,12 +153,11 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            // Initialize any Bootstrap tooltips
+        $(document).ready(function() {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
-            })
+            });
         });
     </script>
 } 

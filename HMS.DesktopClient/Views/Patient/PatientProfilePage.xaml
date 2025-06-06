@@ -1,58 +1,98 @@
-<Page
-    x:Class="HMS.DesktopClient.Views.Patient.PatientProfilePage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:HMS.DesktopClient.Views.Patient"
-    Background="White">
+<Page  
+   x:Class="HMS.DesktopClient.Views.Patient.PatientProfilePage"  
+   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  
+   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
+   Background="White">
 
-    <StackPanel Padding="20" Spacing="10">
-        <Button Content="Update Profile"
-                HorizontalAlignment="Right"
-                Click="OnUpdateButtonClick" />
+    <Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="500"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="0,40,0,0">
+                    <Border Background="#F9F6F6" CornerRadius="10" Padding="30">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Margin="0,0,0,0" Foreground="Black"/>
+                            <TextBlock Text="{Binding Email}" FontSize="12" Foreground="#888" Margin="0,0,0,20"/>
 
-        <ScrollViewer>
-            <StackPanel Spacing="10">
-                <TextBlock Text="Name" FontWeight="Bold" />
-                <TextBox Text="{Binding Name, Mode=TwoWay}" />
+                            <TextBlock Text="Personal Information" FontWeight="Bold" FontSize="14" Margin="0,10,0,20" Foreground="Black"/>
 
-                <TextBlock Text="Phone Number" FontWeight="Bold" />
-                <TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" />
+                            <!-- Editable Fields -->
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Name" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Name, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Phone Number" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding PhoneNumber, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Blood Type" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding BloodType, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Emergency Contact" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding EmergencyContact, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Allergies" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Allergies, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Weight" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Weight, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Height" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Height, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Address" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Address, Mode=TwoWay}" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0" Foreground="Black"/>
+                            </StackPanel>
 
-                <TextBlock Text="CNP" FontWeight="Bold" />
-                <TextBox Text="{Binding CNP, Mode=TwoWay}" />
+                            <!-- Disabled Read-Only Fields -->
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Email" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Email}" IsEnabled="False" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Role" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding Role}" IsEnabled="False" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Created At" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding CreatedAt}" IsEnabled="False" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="CNP" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding CNP}" IsEnabled="False" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,10">
+                                <TextBlock Text="Birth Date" FontSize="12" Foreground="Black"/>
+                                <TextBox Text="{Binding BirthDate}" IsEnabled="False" Height="32" Background="#F5F0F0" BorderThickness="0" Margin="0,5,0,0" Padding="8,0"/>
+                            </StackPanel>
 
-                <TextBlock Text="Email" FontWeight="Bold" />
-                <TextBox Text="{Binding Email}" IsEnabled="False" />
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" Margin="0,10,0,0" TextWrapping="Wrap" />
 
-                <TextBlock Text="Role" FontWeight="Bold" />
-                <TextBox Text="{Binding Role}" IsEnabled="False" />
-
-                <TextBlock Text="Created At" FontWeight="Bold" />
-                <TextBox Text="{Binding CreatedAt}" IsEnabled="False" />
-
-                <!-- New fields -->
-
-                <TextBlock Text="Blood Type" FontWeight="Bold" />
-                <TextBox Text="{Binding BloodType, Mode=TwoWay}" />
-
-                <TextBlock Text="Emergency Contact" FontWeight="Bold" />
-                <TextBox Text="{Binding EmergencyContact, Mode=TwoWay}" />
-
-                <TextBlock Text="Allergies" FontWeight="Bold" />
-                <TextBox Text="{Binding Allergies, Mode=TwoWay}" />
-
-                <TextBlock Text="Weight" FontWeight="Bold" />
-                <TextBox Text="{Binding Weight, Mode=TwoWay}" />
-
-                <TextBlock Text="Height" FontWeight="Bold" />
-                <TextBox Text="{Binding Height, Mode=TwoWay}" />
-
-                <TextBlock Text="Birth Date" FontWeight="Bold" />
-                <TextBox Text="{Binding BirthDate, Mode=TwoWay}" />
-
-                <TextBlock Text="Address" FontWeight="Bold" />
-                <TextBox Text="{Binding Address, Mode=TwoWay}" />
-            </StackPanel>
+                            <!-- Save Button -->
+                            <Button Content="Save"
+                                   Background="#F5F0F0"
+                                   Foreground="Black"
+                                   FontWeight="Bold"
+                                   Height="36"
+                                   BorderThickness="0"
+                                   Margin="0,20,0,0"
+                                   Padding="0"
+                                   HorizontalAlignment="Stretch"
+                                   Click="OnUpdateButtonClick"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
-    </StackPanel>
+    </Grid>
 </Page>

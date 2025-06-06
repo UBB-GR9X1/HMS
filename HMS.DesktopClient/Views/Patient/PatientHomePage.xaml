@@ -15,14 +15,35 @@
         </Grid.RowDefinitions>
 
         <!-- Top Navigation -->
-        <Grid Background="LightGray" Padding="10">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                <Button Content="Doctors" Click="Doctors_Click"/>
-                <Button Content="Medical Records" Click="MedicalRecords_Click"/>
-                <Button Content="Profile" Click="Profile_Click"/>
-                <Button Content="Home" Click="Home_Click"/>
-            </StackPanel>
-        </Grid>
+        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Height="60" VerticalAlignment="Top">
+            <Grid Height="60">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- HMS Logo -->
+                <TextBlock Text="HMS" Foreground="Red" FontWeight="ExtraBlack" FontSize="20" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                <!-- All Navigation Buttons, HOME, and Profile Icon together -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,20,0">
+                    <Button Content="Appointments"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Appointments_Click"/>
+                    <Button Content="Doctors"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Doctors_Click"/>
+                    <Button Content="Medical Records"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="MedicalRecords_Click"/>
+                    <Button Content="HOME" Background="Red" Foreground="White" FontWeight="Bold" Padding="10,5" BorderThickness="0" Margin="10,0,10,0" FontSize="14" Click="Home_Click"/>
+                    <Button Background="Transparent" BorderThickness="0" Padding="0" Width="32" Height="32" Click="Profile_Click">
+                        <Viewbox Width="28" Height="28" VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <!-- Head (circle) -->
+                                <Path Stroke="Red" StrokeThickness="2" Fill="Transparent"
+              Data="M12,7 A4,4 0 1 1 11.99,7 Z"/>
+                                <!-- Shoulders/body -->
+                                <Path Stroke="Red" StrokeThickness="2" Fill="Transparent"
+              Data="M5,18 Q12,14 19,18"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- Frame for View Navigation -->
         <Frame x:Name="MainFrame" Grid.Row="1"/>

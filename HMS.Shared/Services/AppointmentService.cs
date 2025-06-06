@@ -1,11 +1,12 @@
-﻿using HMS.Shared.DTOs;
-using HMS.Shared.Proxies.Implementations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-
 using System.Threading.Tasks;
+using HMS.Shared.DTOs;
+using HMS.Shared.Proxies.Implementations;
+
 
 namespace HMS.Shared.Services
 {
@@ -18,9 +19,9 @@ namespace HMS.Shared.Services
             _appointmentProxy = appointmentProxy;
         }
 
-        public async Task<IEnumerable<AppointmentDto>> GetAllAsync()
+        public async Task<List<AppointmentDto>> GetAllAsync()
         {
-            return await _appointmentProxy.GetAllAsync();
+            return (List<AppointmentDto>)await _appointmentProxy.GetAllAsync();
         }
 
         public async Task<AppointmentDto?> GetByIdAsync(int id)
@@ -28,26 +29,32 @@ namespace HMS.Shared.Services
             return await _appointmentProxy.GetByIdAsync(id);
         }
 
-        public async Task AddAsync(AppointmentDto equipment)
+        public async Task AddAsync(AppointmentDto appointment)
         {
-            await _appointmentProxy.AddAsync(equipment);
+            await _appointmentProxy.AddAsync(appointment);
         }
 
-        public async Task UpdateAsync(AppointmentDto equipment)
+        public async Task UpdateAsync(AppointmentDto appointment)
         {
-            await _appointmentProxy.UpdateAsync(equipment);
+            await _appointmentProxy.UpdateAsync(appointment);
         }
-
 
         public async Task DeleteAsync(int id)
         {
             await _appointmentProxy.DeleteAsync(id);
         }
 
-        //public async Task<bool> ExistsAsync(int id)
-        //{
-        //    return await _appointmentProxy.ExistsAsync(id);
-        //}
+        public async Task<List<AppointmentDto>> GetAppointmentsForDoctor(int doctorId)
+        {
+            if (doctorId <= 0)
+                throw new ArgumentException("Invalid doctor ID", nameof(doctorId));
+            IEnumerable<AppointmentDto> appointmentDtos = await _appointmentProxy.GetAllAsync();
+            List<AppointmentDto> res = appointmentDtos.Where(a => a.DoctorId == doctorId).ToList();
+            Debug.WriteLine($"Found {res.Count} appointments for doctor with ID {doctorId}.");
+            return res;
+        }
+
 
     }
 }
+

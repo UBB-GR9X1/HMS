@@ -157,22 +157,41 @@ namespace HMS.DesktopClient.ViewModels
             }
         }
 
-        // Read-only properties from _patient (user info)
         public int Id => _patient.Id;
         public string Email => _patient.Email ?? "";
         public string Role => _patient.Role.ToString();
         public string CreatedAt => _patient.CreatedAt.ToString("yyyy-MM-dd HH:mm");
 
-        // Token only from _user
         public string Token => _user.Token;
 
-        // Update patient info
+        private string _errorMessage;
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set
+            {
+                if (_errorMessage != value)
+                {
+                    _errorMessage = value;
+                    OnPropertyChanged(nameof(ErrorMessage));
+                }
+            }
+        }
+
+
         public async Task<bool> UpdatePatientAsync()
         {
-            // Make sure patient DTO fields are in sync with user info if needed here
-
-            return await _patientService.UpdatePatientAsync(_patient);
+            try
+            {
+                return await _patientService.UpdatePatientAsync(_patient);
+            }
+            catch (Exception exception)
+            {
+                ErrorMessage = exception.Message;
+                return false;
+            }
         }
+
 
         private void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

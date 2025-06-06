@@ -1,46 +1,82 @@
-using HMS.Shared.Repositories.Interfaces;
+using System.Text.Json.Serialization;
 using HMS.Shared.Proxies.Implementations;
+using HMS.Shared.Repositories.Interfaces;
+using HMS.WebClient.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // Configure HttpClient
 builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 
-// TODO: Get token from authentication service
-var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzIiwiYXVkIjoiYWNjb3VudCIsImlzcyI6ImFwcG9pbnRtZW50bWFuYWdlciIsImV4cCI6MTc0OTA1MzgxMiwiaWF0IjoxNzQ5MDUwMjEyLCJuYmYiOjE3NDkwNTAyMTJ9.8PskfrdB7gH6phidvMvcLK9UADUHYWrvnX5fPTmqIkE";
+// Add session services
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
 
-// Register repositories
+// Register service
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PatientService>();
+
+builder.Services.AddScoped<DoctorService>();
+
+// Register repositories with proxy
 builder.Services.AddScoped<IDoctorRepository>(provider =>
 {
-    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
-    return new DoctorProxy(httpClient, token);
+    var authService = provider.GetRequiredService<AuthService>();
+    var httpClient = authService.CreateAuthorizedClient();
+    return new DoctorProxy(httpClient, authService.GetToken() ?? string.Empty);
 });
 
 builder.Services.AddScoped<IPatientRepository>(provider =>
 {
-    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
-    return new PatientProxy(httpClient, token);
+    var authService = provider.GetRequiredService<AuthService>();
+    var httpClient = authService.CreateAuthorizedClient();
+    return new PatientProxy(httpClient, authService.GetToken() ?? string.Empty);
 });
 
 builder.Services.AddScoped<IMedicalRecordRepository>(provider =>
 {
-    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
-    return new MedicalRecordProxy(httpClient, token);
+    var authService = provider.GetRequiredService<AuthService>();
+    var httpClient = authService.CreateAuthorizedClient();
+    return new MedicalRecordProxy(httpClient, authService.GetToken() ?? string.Empty);
 });
 
 builder.Services.AddScoped((Func<IServiceProvider, IAppointmentRepository>)(provider =>
 {
-    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
-    return new AppointmentProxy(httpClient, token);
-}));
 
+    var authService = provider.GetRequiredService<AuthService>();
+    var httpClient = authService.CreateAuthorizedClient();
+    return new AppointmentProxy(httpClient, authService.GetToken() ?? string.Empty);
+});
+                           
 builder.Services.AddScoped<IScheduleRepository>(provider =>
 {
-    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
-    return new ScheduleProxy(httpClient, token);
+    var authService = provider.GetRequiredService<AuthService>();
+    var httpClient = authService.CreateAuthorizedClient();
+    return new ScheduleProxy(httpClient, authService.GetToken() ?? string.Empty);
+});
+
+builder.Services.AddScoped<IProcedureRepository>(provider =>
+{
+    var authService = provider.GetRequiredService<AuthService>();
+    var httpClient = authService.CreateAuthorizedClient();
+    return new ProcedureProxy(httpClient, authService.GetToken() ?? string.Empty);
 });
 
 var app = builder.Build();
@@ -58,10 +94,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Doctor}/{action=Profile}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

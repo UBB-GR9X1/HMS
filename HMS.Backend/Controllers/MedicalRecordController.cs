@@ -215,5 +215,34 @@ namespace HMS.Backend.Controllers
             if (!success) return NotFound();
             return NoContent();
         }
+        /// <summary>
+        /// Retrieves all medical records created by a specific doctor.
+        /// </summary>
+        /// <param name="doctorId">Doctor's ID.</param>
+        /// <returns>List of medical records for the doctor.</returns>
+        [HttpGet("by-doctor/{doctorId}")]
+        [Authorize]
+        public async Task<IActionResult> GetByDoctorId(int doctorId)
+        {
+            var records = await _medicalRecordRepository.GetAllAsync();
+            var doctorRecords = records
+                .Where(r => r.DoctorId == doctorId)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.PatientId,
+                    PatientName = r.Patient?.Name,
+                    r.DoctorId,
+                    DoctorName = r.Doctor?.Name,
+                    DoctorDepartment = r.Doctor?.Department?.Name,
+                    r.ProcedureId,
+                    ProcedureName = r.Procedure?.Name,
+                    ProcedureDepartment = r.Procedure?.Department?.Name,
+                    r.Diagnosis,
+                    r.CreatedAt
+                });
+
+            return Ok(new { records = doctorRecords });
+        }
     }
 }

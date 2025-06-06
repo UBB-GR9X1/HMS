@@ -76,12 +76,21 @@ namespace HMS.Shared.Proxies.Implementations
 
         public async Task<IEnumerable<MedicalRecordDto>> GetAllAsync()
         {
-            AddAuthorizationHeader();
-            HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + "medicalrecord");
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                AddAuthorizationHeader();
+                HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + "medicalrecord");
+                response.EnsureSuccessStatusCode();
 
-            string responseBody = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<IEnumerable<MedicalRecordDto>>(responseBody, _jsonOptions) ?? new List<MedicalRecordDto>();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var wrapper = JsonSerializer.Deserialize<MedicalRecordResponseDto>(responseBody, _jsonOptions);
+                return wrapper?.Records ?? new List<MedicalRecordDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting medical records: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<MedicalRecordDto?> GetByIdAsync(int id)

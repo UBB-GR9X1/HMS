@@ -1,13 +1,13 @@
+using HMS.Shared.DTOs;
 using HMS.Shared.Entities;
 using HMS.Shared.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Transactions;
-using HMS.Shared.DTOs;
 
 namespace HMS.Shared.Proxies.Implementations
 {
@@ -25,7 +25,8 @@ namespace HMS.Shared.Proxies.Implementations
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.Ignore,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
         }
@@ -37,7 +38,8 @@ namespace HMS.Shared.Proxies.Implementations
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.Ignore,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
         }
@@ -53,13 +55,11 @@ namespace HMS.Shared.Proxies.Implementations
             try
             {
                 AddAuthorizationHeader();
-                string appointmentJson = JsonSerializer.Serialize(appointment, _jsonOptions);
-                StringContent content = new StringContent(appointmentJson, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = await _httpClient.PostAsync(_baseUrl + "appointment", content);
+                var content = new StringContent(JsonSerializer.Serialize(appointment, _jsonOptions), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(_baseUrl + "appointment", content);
                 response.EnsureSuccessStatusCode();
 
-                string responseBody = await response.Content.ReadAsStringAsync();
+                var responseBody = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<AppointmentDto>(responseBody, _jsonOptions)!;
             }
             catch (Exception ex)
@@ -74,13 +74,8 @@ namespace HMS.Shared.Proxies.Implementations
             try
             {
                 AddAuthorizationHeader();
-                HttpResponseMessage response = await _httpClient.DeleteAsync(_baseUrl + $"appointment/{id}");
-
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    return false;
-
-                response.EnsureSuccessStatusCode();
-                return true;
+                var response = await _httpClient.DeleteAsync(_baseUrl + $"appointment/{id}");
+                return response.StatusCode != System.Net.HttpStatusCode.NotFound && response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
@@ -94,11 +89,86 @@ namespace HMS.Shared.Proxies.Implementations
             try
             {
                 AddAuthorizationHeader();
-                HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + "appointment");
+                var response = await _httpClient.GetAsync(_baseUrl + "appointment");
                 response.EnsureSuccessStatusCode();
 
-                string responseBody = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<IEnumerable<AppointmentDto>>(responseBody, _jsonOptions)!;
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var appointments = new List<AppointmentDto>();
+
+                try
+                {
+                    var jsonDoc = JsonDocument.Parse(responseBody);
+
+                    void ParseAppointment(JsonElement element)
+                    {
+                        try
+                        {
+                            if (element.TryGetProperty("$ref", out _)) return;
+
+                            var appointment = new AppointmentDto();
+
+                            if (element.TryGetProperty("id", out var idElement))
+                                appointment.Id = idElement.GetInt32();
+
+                            if (element.TryGetProperty("patientId", out var patientIdElement))
+                                appointment.PatientId = patientIdElement.GetInt32();
+
+                            if (element.TryGetProperty("doctorId", out var doctorIdElement))
+                                appointment.DoctorId = doctorIdElement.GetInt32();
+
+                            if (element.TryGetProperty("procedureId", out var procedureIdElement))
+                                appointment.ProcedureId = procedureIdElement.GetInt32();
+
+                            if (element.TryGetProperty("roomId", out var roomIdElement))
+                                appointment.RoomId = roomIdElement.GetInt32();
+
+                            if (element.TryGetProperty("dateTime", out var dateTimeElement))
+                                appointment.DateTime = dateTimeElement.GetDateTime();
+
+                            if (appointment.Id.HasValue && appointment.DoctorId != 0 && appointment.PatientId != 0 &&
+                                !appointments.Any(a => a.Id == appointment.Id))
+                            {
+                                appointments.Add(appointment);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error parsing appointment: {ex.Message}");
+                        }
+                    }
+
+                    if (jsonDoc.RootElement.TryGetProperty("$values", out var valuesElement))
+                    {
+                        foreach (var element in valuesElement.EnumerateArray())
+                        {
+                            ParseAppointment(element);
+                        }
+                    }
+
+                    if (jsonDoc.RootElement.TryGetProperty("$values", out var rootValues))
+                    {
+                        foreach (var element in rootValues.EnumerateArray())
+                        {
+                            if (element.TryGetProperty("doctor", out var doctorElement) &&
+                                doctorElement.TryGetProperty("appointments", out var doctorAppointments) &&
+                                doctorAppointments.TryGetProperty("$values", out var appointmentsValues))
+                            {
+                                foreach (var appointmentElement in appointmentsValues.EnumerateArray())
+                                {
+                                    ParseAppointment(appointmentElement);
+                                }
+                            }
+                        }
+                    }
+
+                    return appointments;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error parsing reference-tracked response: {ex.Message}");
+                }
+
+                return JsonSerializer.Deserialize<List<AppointmentDto>>(responseBody, _jsonOptions) ?? new List<AppointmentDto>();
             }
             catch (Exception ex)
             {
@@ -112,14 +182,13 @@ namespace HMS.Shared.Proxies.Implementations
             try
             {
                 AddAuthorizationHeader();
-                HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + $"appointment/{id}");
+                var response = await _httpClient.GetAsync(_baseUrl + $"appointment/{id}");
 
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     return null;
 
                 response.EnsureSuccessStatusCode();
-
-                string responseBody = await response.Content.ReadAsStringAsync();
+                var responseBody = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<AppointmentDto>(responseBody, _jsonOptions);
             }
             catch (Exception ex)
@@ -134,16 +203,9 @@ namespace HMS.Shared.Proxies.Implementations
             try
             {
                 AddAuthorizationHeader();
-                string appointmentJson = JsonSerializer.Serialize(appointment, _jsonOptions);
-                StringContent content = new StringContent(appointmentJson, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = await _httpClient.PutAsync(_baseUrl + $"appointment/{appointment.Id}", content);
-
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    return false;
-
-                response.EnsureSuccessStatusCode();
-                return true;
+                var content = new StringContent(JsonSerializer.Serialize(appointment, _jsonOptions), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync(_baseUrl + $"appointment/{appointment.Id}", content);
+                return response.StatusCode != System.Net.HttpStatusCode.NotFound && response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {

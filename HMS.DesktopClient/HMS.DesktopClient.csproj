@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -11,14 +11,17 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;HMS</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Views\AdminHomePage.xaml" />
-    <None Remove="Views\DoctorHomePage.xaml" />
     <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\PatientHomePage.xaml" />
+    <None Remove="Views\PatientsPage.xaml" />
+    <None Remove="Views\MedicalRecordsPage.xaml" />
     <None Remove="Views\Patient\PatientProfilePage.xaml" />
+    <None Remove="Views\Patient\PatientsDisplayPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,17 +52,23 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
+    <PackageReference Include="Volo.Abp.Security" Version="9.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HMS.Shared\HMS.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\AdminHomePage.xaml">
+    <Page Update="Views\PatientsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\DoctorHomePage.xaml">
+    <Page Update="Views\MedicalRecordsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\AdminHomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -80,6 +89,16 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Patient\PatientProfilePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\AdminProfilePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Patient\PatientsDisplayPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

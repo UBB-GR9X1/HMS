@@ -1,89 +1,69 @@
-@model HMS.Shared.Entities.Doctor
+@model HMS.WebClient.ViewModels.DoctorViewModel
 
 @{
     ViewData["Title"] = "Doctor Profile";
-    Layout = "_DoctorLayout";
 }
 
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">Doctor Profile</h2>
+    <h2>@ViewData["Title"]</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4 class="card-title">@Model.Name</h4>
+                    <h6 class="card-subtitle mb-3 text-muted">@Model.DepartmentName</h6>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+
+                        <dt class="col-sm-4">Phone Number</dt>
+                        <dd class="col-sm-8">@Model.PhoneNumber</dd>
+
+                        <dt class="col-sm-4">CNP</dt>
+                        <dd class="col-sm-8">@Model.CNP</dd>
+
+                        <dt class="col-sm-4">License Number</dt>
+                        <dd class="col-sm-8">@Model.LicenseNumber</dd>
+
+                        <dt class="col-sm-4">Years of Experience</dt>
+                        <dd class="col-sm-8">@Model.YearsOfExperience</dd>
+
+                        <dt class="col-sm-4">Member Since</dt>
+                        <dd class="col-sm-8">@Model.CreatedAt.ToString("MMMM dd, yyyy")</dd>
+                    </dl>
                 </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(TempData["SuccessMessage"]?.ToString()))
-                    {
-                        <div class="alert alert-success">
-                            @TempData["SuccessMessage"]
-                        </div>
-                    }
-                    @if (!ViewData.ModelState.IsValid)
-                    {
-                        <div class="alert alert-danger">
-                            <div asp-validation-summary="All" class="text-danger"></div>
-                        </div>
-                    }
+            </div>
 
-                    <form asp-action="UpdateProfile" method="post">
-                        <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="Role" />
-                        <input type="hidden" asp-for="CreatedAt" />
-                        <input type="hidden" asp-for="Password" />
-
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Full Name</label>
-                            <input asp-for="Name" class="form-control" />
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label">Email</label>
-                            <input asp-for="Email" class="form-control" type="email" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
-                            <input asp-for="PhoneNumber" class="form-control" />
-                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="CNP" class="form-label">CNP</label>
-                            <input asp-for="CNP" class="form-control" />
-                            <span asp-validation-for="CNP" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Department.Name" class="form-label">Department</label>
-                            <input asp-for="Department.Name" class="form-control" readonly />
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="YearsOfExperience" class="form-label">Years of Experience</label>
-                            <input asp-for="YearsOfExperience" class="form-control" type="number" />
-                            <span asp-validation-for="YearsOfExperience" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="LicenseNumber" class="form-label">License Number</label>
-                            <input asp-for="LicenseNumber" class="form-control" />
-                            <span asp-validation-for="LicenseNumber" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <a asp-action="MedicalHistory" class="btn btn-secondary">View Medical History</a>
-                        </div>
-                    </form>
-                </div>
+            <div class="mt-4">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+                <a asp-action="MedicalHistory" class="btn btn-info">
+                    <i class="fas fa-history"></i> View Medical History
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
 } 

@@ -20,29 +20,18 @@ namespace HMS.DesktopClient.Views.Patient
         {
             bool success = await ViewModel.UpdatePatientAsync();
 
-            if (success)
+            if (this.XamlRoot == null)
+                return; // Or delay dialog, or fallback to simpler alert mechanism
+
+            var dialog = new ContentDialog
             {
-                // Optionally notify the user
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "Success",
-                    Content = "Profile updated successfully.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-            else
-            {
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "Error",
-                    Content = "Failed to update profile.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
+                Title = success ? "Success" : "Error",
+                Content = success ? "Profile updated successfully." : "Failed to update profile.",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+
+            await dialog.ShowAsync();
         }
     }
 }

@@ -107,10 +107,6 @@ namespace HMS.Backend.Controllers
             if (existing == null)
                 return NotFound();
 
-            var department = await _departmentRepository.GetByIdAsync(dto.DepartmentId);
-            if (department == null)
-                return BadRequest($"Department with ID {dto.DepartmentId} not found.");
-
             // Update user fields
             existing.Email = dto.Email;
             // Only update password if it's provided in the DTO
@@ -126,7 +122,6 @@ namespace HMS.Backend.Controllers
             
             // Update doctor fields
             existing.DepartmentId = dto.DepartmentId;
-            existing.Department = department;
             existing.YearsOfExperience = dto.YearsOfExperience;
             existing.LicenseNumber = dto.LicenseNumber;
 
