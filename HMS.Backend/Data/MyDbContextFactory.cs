@@ -25,7 +25,7 @@ namespace HMS.Backend.Data
 
             var builder = new DbContextOptionsBuilder<MyDbContext>();
             builder.UseSqlServer(connectionString);
-
+                
             builder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
 
             return new MyDbContext(builder.Options);

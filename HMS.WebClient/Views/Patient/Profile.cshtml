@@ -1,0 +1,251 @@
+﻿@model HMS.Shared.DTOs.Patient.PatientDto
+@{
+    ViewData["Title"] = "Patient Profile";
+}
+
+<style>
+    :root {
+        --primary-color: #4723D9;
+        --secondary-color: #64C9CF;
+        --accent-color: #FF6B6B;
+        --light-color: #F8F9FA;
+        --dark-color: #343A40;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #7045e8 100%);
+        color: white;
+        padding: 2.5rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 1rem 1rem;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 5px solid white;
+        object-fit: cover;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        background-color: #e9ecef; /* Add background color as fallback */
+    }
+
+    .info-card {
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+        .info-card .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7045e8 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #f0f0ff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1.25rem;
+        color: var(--primary-color);
+        font-size: 1.25rem;
+    }
+
+    .info-content strong {
+        display: block;
+        color: #555;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-content span {
+        color: #333;
+        font-weight: 500;
+        font-size: 1.1rem;
+    }
+
+    .edit-profile-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: rgba(255,255,255,0.3);
+        color: white;
+        border: 2px solid white;
+        border-radius: 50px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .edit-profile-btn:hover {
+            background-color: white;
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .edit-profile-btn i {
+            margin-right: 0.5rem;
+        }
+</style>
+
+<!-- Add Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<div class="container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="profile-header position-relative">
+        <div class="text-center">
+            <!-- Use a fixed container to prevent layout shifts -->
+            <div style="width: 150px; height: 150px; margin: 0 auto;">
+                <img src="~/images/default-avatar.png" alt="Profile Picture" class="profile-avatar"
+                     onerror="this.src='/images/default-avatar.png'; this.onerror='';">
+            </div>
+            <h2 class="mb-1">@Model.Name</h2>
+            <p class="mb-0"><i class="fas fa-envelope me-2"></i>@Model.Email</p>
+        </div>
+
+        <a asp-action="Edit" class="edit-profile-btn">
+            <i class="fas fa-pencil-alt"></i> Edit
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-user-circle me-2"></i> Personal Information
+                </div>
+                <div class="card-body p-0">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Phone Number</strong>
+                            <span>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>CNP</strong>
+                            <span>@Model.CNP</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Address</strong>
+                            <span>@(string.IsNullOrEmpty(Model.Address) ? "Not provided" : Model.Address)</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Birth Date</strong>
+                            <span>@Model.BirthDate.ToString("MMMM d, yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-heartbeat me-2"></i> Medical Information
+                </div>
+                <div class="card-body p-0">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-ruler-vertical"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Height</strong>
+                            <span>@Model.Height cm</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-weight"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Weight</strong>
+                            <span>@Model.Weight kg</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Blood Type</strong>
+                            <span>@(string.IsNullOrEmpty(Model.BloodType) ? "Not provided" : Model.BloodType)</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Emergency Contact</strong>
+                            <span>@(string.IsNullOrEmpty(Model.EmergencyContact) ? "Not provided" : Model.EmergencyContact)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Allergies))
+            {
+                <div class="info-card">
+                    <div class="card-header">
+                        <i class="fas fa-allergies me-2"></i> Allergies
+                    </div>
+                    <div class="card-body">
+                        <p>@Model.Allergies</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

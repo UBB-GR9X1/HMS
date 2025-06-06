@@ -1,0 +1,104 @@
+@model HMS.WebClient.ViewModels.DoctorViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="container mt-4">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="Edit" method="post" id="editForm">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Role" />
+                <input type="hidden" asp-for="CreatedAt" />
+                
+                @{
+                    var scheduleIdsJson = JsonSerializer.Serialize(Model.ScheduleIds);
+                    var reviewIdsJson = JsonSerializer.Serialize(Model.ReviewIds);
+                    var appointmentIdsJson = JsonSerializer.Serialize(Model.AppointmentIds);
+                }
+                <input type="hidden" name="ScheduleIdsJson" value="@scheduleIdsJson" />
+                <input type="hidden" name="ReviewIdsJson" value="@reviewIdsJson" />
+                <input type="hidden" name="AppointmentIdsJson" value="@appointmentIdsJson" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Leave blank to keep current password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="CNP" class="form-label"></label>
+                            <input asp-for="CNP" class="form-control" />
+                            <span asp-validation-for="CNP" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LicenseNumber" class="form-label"></label>
+                            <input asp-for="LicenseNumber" class="form-control" />
+                            <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="YearsOfExperience" class="form-label"></label>
+                            <input asp-for="YearsOfExperience" class="form-control" type="number" min="0" max="100" />
+                            <span asp-validation-for="YearsOfExperience" class="text-danger"></span>
+                        </div>
+
+                        <!-- Hidden fields for department data -->
+                        <input type="hidden" asp-for="DepartmentId" />
+                        <input type="hidden" asp-for="DepartmentName" />
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" id="saveButton">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a asp-action="Profile" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('#editForm').on('submit', function(e) {
+                if ($(this).valid()) {
+                    $('#saveButton').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+                }
+            });
+        });
+    </script>
+} 

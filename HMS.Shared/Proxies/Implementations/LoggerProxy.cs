@@ -6,190 +6,135 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HMS.Shared.Proxies.Implementations
 {
     public class LoggerProxy : ILoggerRepository
     {
-        private readonly HttpClient _http_client;
-        private static readonly string s_base_api_url = Config._base_api_url;
-        private readonly JsonSerializerOptions _json_options;
+        private readonly HttpClient _httpClient;
+        private static readonly string _baseUrl = Config._base_api_url;
         private readonly string _token;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LoggerProxy"/> class.
-        /// </summary>
+        // Constructor cu HttpClient + token
         public LoggerProxy(HttpClient httpClient, string token)
         {
-            this._http_client = httpClient;
-
-            this._json_options = new JsonSerializerOptions
+            _httpClient = httpClient;
+            _token = token;
+            _jsonOptions = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             };
+        }
 
-            this._token = token;
+        // Constructor doar cu token
+        public LoggerProxy(string token)
+        {
+            _httpClient = new HttpClient { BaseAddress = new Uri(_baseUrl) };
+            _token = token;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
         }
 
         private void AddAuthorizationHeader()
         {
-            _http_client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", this._token);
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
         }
 
-        /// <summary>
-        /// Gets all logs.
-        /// </summary>
-        /// <returns>A list of all logs.</returns>
-        public async Task<IEnumerable<Log>> GetAllAsync()
+        public async Task<IEnumerable<LogDto>> GetAllAsync()
         {
             try
             {
                 AddAuthorizationHeader();
 
-                HttpResponseMessage response = await this._http_client.GetAsync(s_base_api_url + "log");
+                HttpResponseMessage response = await this._httpClient.GetAsync(_baseUrl + "log");
                 response.EnsureSuccessStatusCode();
 
-                IEnumerable<Log> logs = await response.Content.ReadFromJsonAsync<List<Log>>(this._json_options);
-                return logs;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Exception: {exception.Message}");
-                return new List<Log>();
-            }
-        }
-
-        /// <summary>
-        /// Gets a log by its unique identifier.
-        /// </summary>
-        /// <param name="id">The id of the log.</param>
-        /// <returns>The log with the given id.</returns>
-        public async Task<Log?> GetByIdAsync(int id)
-        {
-            try
-            {
-                AddAuthorizationHeader();
-
-                HttpResponseMessage response = await this._http_client.GetAsync(s_base_api_url + $"log/{id}");
-                response.EnsureSuccessStatusCode();
-
-                Log log = await response.Content.ReadFromJsonAsync<Log>(this._json_options);
-                return log;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Exception: {exception.Message}");
-                throw new Exception($"Log with ID {id} not found.");
-            }
-        }
-
-        /// <summary>
-        /// Adds a new log to the system.
-        /// </summary>
-        /// <param name="log">The log to be added.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
-        public async Task<Log> AddAsync(Log log)
-        {
-            try
-            {
-                AddAuthorizationHeader();
-
-                LogDto log_data = new LogDto
+                string json = await response.Content.ReadAsStringAsync();
+                using (JsonDocument document = JsonDocument.Parse(json))
                 {
-                    Id = log.Id,
-                    UserId = log.UserId,
-                    Action = log.Action,
-                    CreatedAt = log.CreatedAt,
-                };
-
-                HttpResponseMessage response = await this._http_client.PostAsJsonAsync(s_base_api_url + "log", log_data);
-                response.EnsureSuccessStatusCode();
-
-                Log createdLog = await response.Content.ReadFromJsonAsync<Log>(this._json_options);
-                return createdLog;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Exception: {exception.Message}");
-                throw;
-            }
-        }
-
-        public async Task<bool> UpdateAsync(Log log)
-        {
-            try
-            {
-                AddAuthorizationHeader();
-
-                LogDto log_data = new LogDto
-                {
-                    Id = log.Id,
-                    UserId = log.UserId,
-                    Action = log.Action,
-                    CreatedAt = log.CreatedAt,
-                };
-
-                HttpResponseMessage response = await this._http_client.PutAsJsonAsync(s_base_api_url + $"log/{log.Id}", log_data);
-                response.EnsureSuccessStatusCode();
-
-                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    Console.WriteLine("Bad Request: The log data is invalid.");
-                    return false;
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-                {
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("Unexpected response status code.");
+                    if (document.RootElement.TryGetProperty("$values", out JsonElement valuesElement))
+                    {
+                        string valuesJson = valuesElement.GetRawText();
+                        var logs = JsonSerializer.Deserialize<List<LogDto>>(valuesJson, _jsonOptions);
+                        return logs ?? new List<LogDto>();
+                    }
+                    else
+                    {
+                        var logs = JsonSerializer.Deserialize<List<LogDto>>(json, _jsonOptions);
+                        return logs ?? new List<LogDto>();
+                    }
                 }
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Exception: {exception.Message}");
-                throw;
+                System.Diagnostics.Debug.WriteLine($"Exception in GetAllAsync: {exception.Message}");
+                return new List<LogDto>();
             }
         }
 
-        /// <summary>
-        /// Deletes a log by its unique identifier.
-        /// </summary>
-        /// <param name="id">The id of the log</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
+        public async Task<LogDto?> GetByIdAsync(int id)
+        {
+            AddAuthorizationHeader();
+            HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + $"log/{id}");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<LogDto>(responseBody, _jsonOptions);
+        }
+
+        public async Task<LogDto> AddAsync(LogDto log)
+        {
+            AddAuthorizationHeader();
+            string logJson = JsonSerializer.Serialize(log, _jsonOptions);
+            StringContent content = new StringContent(logJson, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _httpClient.PostAsync(_baseUrl + "log", content);
+            response.EnsureSuccessStatusCode();
+
+            string responseBody = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<LogDto>(responseBody, _jsonOptions)!;
+        }
+
+        public async Task<bool> UpdateAsync(LogDto log)
+        {
+            AddAuthorizationHeader();
+            string logJson = JsonSerializer.Serialize(log, _jsonOptions);
+            StringContent content = new StringContent(logJson, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _httpClient.PutAsync(_baseUrl + $"log/{log.Id}", content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
+
+            response.EnsureSuccessStatusCode();
+            return response.IsSuccessStatusCode;
+        }
+
         public async Task<bool> DeleteAsync(int id)
         {
-            try
-            {
-                AddAuthorizationHeader();
+            AddAuthorizationHeader();
+            HttpResponseMessage response = await _httpClient.DeleteAsync(_baseUrl + $"log/{id}");
 
-                HttpResponseMessage response = await this._http_client.DeleteAsync(s_base_api_url + $"log/{id}");
-                response.EnsureSuccessStatusCode();
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
 
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    Console.WriteLine($"Log with ID {id} not found.");
-                    return false;
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-                {
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("Unexpected response status code.");
-                }
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Exception: {exception.Message}");
-                throw;
-            }
+            response.EnsureSuccessStatusCode();
+            return response.IsSuccessStatusCode;
         }
     }
 }

@@ -2,8 +2,10 @@
 using HMS.DesktopClient.APIClients;
 using HMS.DesktopClient.Views;
 using HMS.Shared.DTOs;
+using HMS.Shared.DTOs.Patient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using System.Net.Http;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -17,6 +19,10 @@ namespace HMS.DesktopClient
     {
         public static IServiceProvider Services { get; private set; }
         public static UserWithTokenDto? CurrentUser { get; set; } = null;
+        public static PatientDto? CurrentPatient { get; set; } = null;
+        public static AdminDto? CurrentAdmin { get; set; } = null;
+        public static DoctorDto? CurrentDoctor { get; set; } = null;  
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -29,6 +35,11 @@ namespace HMS.DesktopClient
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<UserApiClient>();
+
+            // Register and configure HttpClient
+            services.AddSingleton<HttpClient>(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5203/api/") });
+
+            // TODO: Register other services here
         }
 
         /// <summary>

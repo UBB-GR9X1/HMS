@@ -28,14 +28,14 @@ namespace HMS.Shared.Repositories.Interfaces
         /// </summary>
         /// <param name="patient">The patient to add.</param>
         /// <returns>The added patient.</returns>
-        Task<Patient> AddAsync(Patient patient);
+        Task<PatientDto> AddAsync(PatientDto patient);
 
         /// <summary>
         /// Updates an existing patient asynchronously.
         /// </summary>
         /// <param name="patient">The patient with updated data.</param>
         /// <returns>True if update succeeded, false otherwise.</returns>
-        Task<bool> UpdateAsync(Patient patient);
+        Task<bool> UpdateAsync(PatientUpdateDto patient, int id);
 
         /// <summary>
         /// Deletes a patient by their unique identifier asynchronously.

@@ -1,39 +1,40 @@
-﻿using HMS.Shared.Entities;
+﻿using HMS.Shared.DTOs;
+using HMS.Shared.Entities;
 
 namespace HMS.Shared.Repositories.Interfaces
 {
     /// <summary>
-    /// Interface for managing Room entities.
+    /// Interface for managing Room DTOs.
     /// </summary>
     public interface IRoomRepository
     {
         /// <summary>
-        /// Retrieves all Room entities.
+        /// Retrieves all Room DTOs.
         /// </summary>
-        /// <returns>List of Room entities</returns>
-        Task<List<Room>> GetAllAsync();
+        /// <returns>List of Room DTOs</returns>
+        Task<List<RoomDto>> GetAllAsync();
 
         /// <summary>
-        /// Retrieves a Room entity by ID.
+        /// Retrieves a Room DTO by ID.
         /// </summary>
         /// <param name="id">Room ID</param>
-        /// <returns>Room entity if found; otherwise null</returns>
-        Task<Room?> GetByIdAsync(int id);
+        /// <returns>Room DTO if found; otherwise null</returns>
+        Task<RoomDto?> GetByIdAsync(int id);
 
         /// <summary>
-        /// Adds a new Room entity.
+        /// Adds a new Room DTO.
         /// </summary>
-        /// <param name="room">Room entity to add</param>
-        Task AddAsync(Room room);
+        /// <param name="room">Room DTO to add</param>
+        Task AddAsync(RoomDto room);
 
         /// <summary>
-        /// Updates an existing Room entity.
+        /// Updates an existing Room DTO.
         /// </summary>
-        /// <param name="room">Room entity with updated data</param>
-        Task UpdateAsync(Room room);
+        /// <param name="room">Room DTO with updated data</param>
+        Task UpdateAsync(RoomDto room);
 
         /// <summary>
-        /// Deletes a Room entity by ID.
+        /// Deletes a Room DTO by ID.
         /// </summary>
         /// <param name="id">Room ID</param>
         Task DeleteAsync(int id);

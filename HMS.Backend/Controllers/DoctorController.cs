@@ -5,6 +5,8 @@ using HMS.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HMS.Backend.Controllers
@@ -15,11 +17,18 @@ namespace HMS.Backend.Controllers
     {
         private readonly IDoctorRepository _doctorRepository;
         private readonly IDepartmentRepository _departmentRepository;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public DoctorController(IDoctorRepository doctorRepository, IDepartmentRepository departmentRepository)
         {
             _doctorRepository = doctorRepository;
             _departmentRepository = departmentRepository;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
         }
 
         [HttpGet]
@@ -28,7 +37,8 @@ namespace HMS.Backend.Controllers
         public async Task<IActionResult> GetAll()
         {
             var doctors = await _doctorRepository.GetAllAsync();
-            return Ok(doctors);
+            var serializedDoctors = JsonSerializer.Serialize(doctors, _jsonOptions);
+            return Content(serializedDoctors, "application/json");
         }
 
         [HttpGet("{id}")]
@@ -39,7 +49,8 @@ namespace HMS.Backend.Controllers
         {
             var doctor = await _doctorRepository.GetByIdAsync(id);
             if (doctor == null) return NotFound();
-            return Ok(doctor);
+            var serializedDoctor = JsonSerializer.Serialize(doctor, _jsonOptions);
+            return Content(serializedDoctor, "application/json");
         }
 
         [HttpGet("department/{id}")]
@@ -49,8 +60,9 @@ namespace HMS.Backend.Controllers
         public async Task<IActionResult> GetByDepartmentId(int id)
         {
             var doctors = await _doctorRepository.GetByDepartmentIdAsync(id);
-            if (doctors.Count() == 0) return NotFound();
-            return Ok(doctors);
+            if (!doctors.Any()) return NotFound();
+            var serializedDoctors = JsonSerializer.Serialize(doctors, _jsonOptions);
+            return Content(serializedDoctors, "application/json");
         }
 
         [HttpPost]
@@ -71,18 +83,17 @@ namespace HMS.Backend.Controllers
                 Name = dto.Name,
                 CNP = dto.CNP,
                 PhoneNumber = dto.PhoneNumber,
-                CreatedAt = dto.CreatedAt, // Usually set by the system, adjust if needed
+                CreatedAt = dto.CreatedAt,
 
                 DepartmentId = dto.DepartmentId,
                 Department = department,
                 YearsOfExperience = dto.YearsOfExperience,
                 LicenseNumber = dto.LicenseNumber,
-
-                // You might want to initialize collections here if needed, or in the entity constructor
             };
 
             var createdDoctor = await _doctorRepository.AddAsync(doctor);
-            return CreatedAtAction(nameof(GetById), new { id = createdDoctor.Id }, createdDoctor);
+            var serializedDoctor = JsonSerializer.Serialize(createdDoctor, _jsonOptions);
+            return Created($"/api/doctor/{createdDoctor.Id}", serializedDoctor);
         }
 
         [HttpPut("{id}")]
@@ -96,22 +107,21 @@ namespace HMS.Backend.Controllers
             if (existing == null)
                 return NotFound();
 
-            var department = await _departmentRepository.GetByIdAsync(dto.DepartmentId);
-            if (department == null)
-                return BadRequest($"Department with ID {dto.DepartmentId} not found.");
-
             // Update user fields
             existing.Email = dto.Email;
-            existing.Password = dto.Password;
+            // Only update password if it's provided in the DTO
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                existing.Password = dto.Password;
+            }
             existing.Role = dto.Role;
             existing.Name = dto.Name;
             existing.CNP = dto.CNP;
             existing.PhoneNumber = dto.PhoneNumber;
-            existing.CreatedAt = dto.CreatedAt; // Usually not updated manually
-
+            // Don't update CreatedAt as it should be immutable
+            
             // Update doctor fields
             existing.DepartmentId = dto.DepartmentId;
-            existing.Department = department;
             existing.YearsOfExperience = dto.YearsOfExperience;
             existing.LicenseNumber = dto.LicenseNumber;
 

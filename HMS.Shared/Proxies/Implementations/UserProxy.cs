@@ -16,16 +16,38 @@ namespace HMS.Shared.Proxies.Implementations
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl = Config._base_api_url;
         private readonly string _token;
+        private readonly JsonSerializerOptions _jsonOptions;
 
+        // Constructor cu HttpClient + token
         public UserProxy(HttpClient httpClient, string token)
         {
-            this._httpClient = httpClient;
-            this._token = token;
+            _httpClient = httpClient;
+            _token = token;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
+        }
+
+        // Constructor doar cu token
+        public UserProxy(string token)
+        {
+            _httpClient = new HttpClient { BaseAddress = new Uri(_baseUrl) };
+            _token = token;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
         }
 
         private void AddAuthorizationHeader()
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", this._token);
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
         }
 
         public async Task<IEnumerable<UserDto>> GetAllAsync()
@@ -36,13 +58,7 @@ namespace HMS.Shared.Proxies.Implementations
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();
-
-            IEnumerable<UserDto> users = JsonSerializer.Deserialize<IEnumerable<UserDto>>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return users;
+            return JsonSerializer.Deserialize<IEnumerable<UserDto>>(responseBody, _jsonOptions) ?? new List<UserDto>();
         }
 
         public async Task<UserDto?> GetByIdAsync(int id)
@@ -50,89 +66,54 @@ namespace HMS.Shared.Proxies.Implementations
             AddAuthorizationHeader();
 
             HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + $"user/{id}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
             response.EnsureSuccessStatusCode();
-            
             string responseBody = await response.Content.ReadAsStringAsync();
-            UserDto? user = JsonSerializer.Deserialize<UserDto>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return user;
+            return JsonSerializer.Deserialize<UserDto>(responseBody, _jsonOptions);
         }
 
         public async Task<UserDto?> GetByEmailAsync(string email)
         {
             AddAuthorizationHeader();
-            
+
             HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + $"user/email/{email}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
             response.EnsureSuccessStatusCode();
-            
             string responseBody = await response.Content.ReadAsStringAsync();
-            UserDto? user = JsonSerializer.Deserialize<UserDto>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return user;
+            return JsonSerializer.Deserialize<UserDto>(responseBody, _jsonOptions);
         }
 
-        public async Task<UserDto> AddAsync(User user)
+        public async Task<UserDto> AddAsync(UserDto user)
         {
             AddAuthorizationHeader();
-
-            string userJson = JsonSerializer.Serialize(user, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } // without this, the enum values will not match
-            });
+            string userJson = JsonSerializer.Serialize(user, _jsonOptions);
             StringContent content = new StringContent(userJson, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.PostAsync(_baseUrl + "user", content);
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();
-            UserDto createdUser = JsonSerializer.Deserialize<UserDto>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            });
-
-            if (createdUser == null)
-            {
-                throw new Exception("Failed to deserialize created user.");
-            }
-            return createdUser;
+            return JsonSerializer.Deserialize<UserDto>(responseBody, _jsonOptions)!;
         }
-        public async Task<bool> UpdateAsync(User user)
+
+        public async Task<bool> UpdateAsync(UserDto user)
         {
             AddAuthorizationHeader();
 
-            string userJson = JsonSerializer.Serialize(user, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } // without this, the enum values will not match
-            });
-
+            string userJson = JsonSerializer.Serialize(user, _jsonOptions);
             StringContent content = new StringContent(userJson, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.PutAsync(_baseUrl + $"user/{user.Id}", content);
-            response.EnsureSuccessStatusCode();
 
-            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-            {
-                return true; // Update successful
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-            {
-                throw new ArgumentException("Invalid user data provided.");
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                return false; // User not found
-            }
-            else
-            {
-                throw new Exception("Failed to update user.");
-            }
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
+
+            response.EnsureSuccessStatusCode();
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -140,20 +121,12 @@ namespace HMS.Shared.Proxies.Implementations
             AddAuthorizationHeader();
 
             HttpResponseMessage response = await _httpClient.DeleteAsync(_baseUrl + $"user/{id}");
-            response.EnsureSuccessStatusCode();
 
-            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-            {
-                return true; // Deletion successful
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                return false; // User not found
-            }
-            else
-            {
-                throw new Exception("Failed to delete user.");
-            }
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
+
+            response.EnsureSuccessStatusCode();
+            return response.IsSuccessStatusCode;
         }
     }
 }

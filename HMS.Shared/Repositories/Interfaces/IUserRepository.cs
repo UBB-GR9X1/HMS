@@ -6,7 +6,7 @@ using HMS.Shared.Entities;
 namespace HMS.Shared.Repositories.Interfaces
 {
     /// <summary>
-    /// Repository interface for managing User entities.
+    /// Repository interface for managing User DTOs.
     /// </summary>
     public interface IUserRepository
     {
@@ -33,22 +33,22 @@ namespace HMS.Shared.Repositories.Interfaces
         /// <summary>
         /// Adds a new user asynchronously.
         /// </summary>
-        /// <param name="user">The user to add.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task<UserDto> AddAsync(User user);
+        /// <param name="user">The user DTO to add.</param>
+        /// <returns>The added user DTO.</returns>
+        Task<UserDto> AddAsync(UserDto user);
 
         /// <summary>
         /// Updates an existing user asynchronously.
         /// </summary>
-        /// <param name="user">The user with updated information.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task<bool> UpdateAsync(User user);
+        /// <param name="user">The user DTO with updated information.</param>
+        /// <returns>True if update succeeded, otherwise false.</returns>
+        Task<bool> UpdateAsync(UserDto user);
 
         /// <summary>
         /// Deletes a user by their unique identifier asynchronously.
         /// </summary>
         /// <param name="id">The unique identifier of the user to delete.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <returns>True if deletion succeeded, otherwise false.</returns>
         Task<bool> DeleteAsync(int id);
     }
 }

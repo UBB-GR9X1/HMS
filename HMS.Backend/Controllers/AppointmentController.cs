@@ -43,7 +43,16 @@ namespace HMS.Backend.Controllers
         public async Task<IActionResult> GetAll()
         {
             var appointments = await _appointmentRepository.GetAllAsync();
-            return Ok(appointments);
+            var appDtos = appointments.Select(a => new AppointmentDto
+            {
+                Id = a.Id,
+                PatientId = a.PatientId,
+                DoctorId = a.DoctorId,
+                ProcedureId = a.ProcedureId,
+                RoomId = a.RoomId,
+                DateTime = a.DateTime
+            });
+            return Ok(appDtos);
         }
 
         /// <summary>

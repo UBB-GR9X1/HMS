@@ -1,0 +1,72 @@
+<Page
+    x:Class="HMS.DesktopClient.Views.Patient.PatientsDisplayPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HMS.DesktopClient.Views.Patient"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:viewModels="using:HMS.DesktopClient.ViewModels.Patient"
+    Background="White">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock
+            Text="Patients"
+            FontSize="32"
+            FontWeight="Bold"
+            Margin="0,48,0,32"
+            HorizontalAlignment="Center"
+            Foreground="#222"
+            Grid.Row="0"/>
+
+        <!-- Card Container -->
+        <Border
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            Width="1100"
+            Padding="0,24"
+            Background="White"
+            CornerRadius="16"
+            BorderBrush="#E5E5E5"
+            BorderThickness="1"
+            Margin="0,0,0,0">
+            <StackPanel>
+                <controls:DataGrid 
+                    x:Name="PatientsGrid"
+                    ItemsSource="{x:Bind ViewModel.Patients, Mode=OneWay}"
+                    AutoGenerateColumns="False"
+                    SelectionMode="Single"
+                    HeadersVisibility="Column"
+                    GridLinesVisibility="None"
+                    RowHeight="56"
+                    ColumnHeaderHeight="48"
+                    BorderThickness="0"
+                    Background="White"
+                    HorizontalAlignment="Stretch"
+                    FontSize="16"
+                    Foreground="#6B6B6B"
+                    RequestedTheme="Light"
+                    >
+                    <controls:DataGrid.Columns>
+                        <controls:DataGridTextColumn Header="ID" Binding="{Binding Id}" IsReadOnly="True"/>
+                        <controls:DataGridTextColumn Header="Blood Type" Binding="{Binding BloodType}" />
+                        <controls:DataGridTextColumn Header="Emergency Contact" Binding="{Binding EmergencyContact}" />
+                        <controls:DataGridTextColumn Header="Allergies" Binding="{Binding Allergies}" />
+                        <controls:DataGridTextColumn Header="Weight" Binding="{Binding Weight}" />
+                        <controls:DataGridTextColumn Header="Height" Binding="{Binding Height}" />
+                        <controls:DataGridTextColumn Header="Birth Date" Binding="{Binding BirthDate}" />
+                        <controls:DataGridTextColumn Header="Address" Binding="{Binding Address}" />
+                    </controls:DataGrid.Columns>
+                </controls:DataGrid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

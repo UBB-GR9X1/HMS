@@ -7,150 +7,126 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HMS.Shared.Proxies.Implementations
 {
     public class NotificationProxy : INotificationRepository
     {
-        /// <summary>
-        /// The HTTP client used for sending requests to the Web API.
-        /// </summary>
-
-        private readonly HttpClient _http_client;
-        private static readonly string s_base_api_url = Config._base_api_url;
+        private readonly HttpClient _httpClient;
+        private static readonly string _baseUrl = Config._base_api_url;
         private readonly string _token;
+        private readonly JsonSerializerOptions _jsonOptions;
 
+        // Constructor cu HttpClient + token
         public NotificationProxy(HttpClient httpClient, string token)
         {
-            this._http_client = httpClient;
+            _httpClient = httpClient;
             _token = token;
-        }
-        private void AddAuthorizationHeader()
-        {
-            this._http_client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", this._token);
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
         }
 
-        /// <inheritdoc/>
+        // Constructor doar cu token
+        public NotificationProxy(string token)
+        {
+            _httpClient = new HttpClient { BaseAddress = new Uri(_baseUrl) };
+            _token = token;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.Preserve,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
+        }
+
+        private void AddAuthorizationHeader()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+        }
+
         public async Task<IEnumerable<NotificationDto>> GetAllAsync()
         {
             AddAuthorizationHeader();
-            HttpResponseMessage response = await this._http_client.GetAsync(s_base_api_url + "notification");
+            HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + "notification");
             response.EnsureSuccessStatusCode();
 
-            String json = await response.Content.ReadAsStringAsync();
-            List<NotificationDto> notifications = JsonSerializer.Deserialize<List<NotificationDto>>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return notifications ?? new List<NotificationDto>();
+            string json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<NotificationDto>>(json, _jsonOptions) ?? new List<NotificationDto>();
         }
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<Notification>> GetByUserIdAsync(int user_id)
+        public async Task<NotificationDto?> GetByIdAsync(int id)
         {
             AddAuthorizationHeader();
-            HttpResponseMessage response = await this._http_client.GetAsync(s_base_api_url + $"notification/user/{user_id}");
-            response.EnsureSuccessStatusCode();
-
-            String json = await response.Content.ReadAsStringAsync();
-            IEnumerable<Notification> notifications = JsonSerializer.Deserialize<IEnumerable<Notification>>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return notifications ?? new List<Notification>();
-        }
-
-        /// <inheritdoc/>
-        public async Task<Notification> GetByIdAsync(int id)
-        {
-            AddAuthorizationHeader();
-            HttpResponseMessage response = await this._http_client.GetAsync(s_base_api_url + $"notification/{id}");
+            HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + $"notification/{id}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                throw new KeyNotFoundException($"Notification with ID {id} was not found.");
-            }
+                return null;
 
             response.EnsureSuccessStatusCode();
 
-            string _json = await response.Content.ReadAsStringAsync();
-
-            Notification _notification = JsonSerializer.Deserialize<Notification>(_json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return _notification ?? throw new Exception("Failed to deserialize notification.");
+            string json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<NotificationDto>(json, _jsonOptions);
         }
 
-        /// <inheritdoc/>
-        public async Task<Notification> AddAsync(Notification notification)
+        public async Task<IEnumerable<Notification>> GetByUserIdAsync(int id)
         {
             AddAuthorizationHeader();
-            StringContent jsonContent = new StringContent(
-                JsonSerializer.Serialize(notification),
-                Encoding.UTF8,
-                "application/json");
+            HttpResponseMessage response = await _httpClient.GetAsync(_baseUrl + $"notification/user/{id}");
 
-            HttpResponseMessage response = await this._http_client.PostAsync(s_base_api_url + "notification", jsonContent);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+
+            string json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<IEnumerable<Notification>>(json, _jsonOptions);
+        }
+
+        public async Task<NotificationDto> AddAsync(NotificationDto notification)
+        {
+            AddAuthorizationHeader();
+            string jsonContent = JsonSerializer.Serialize(notification, _jsonOptions);
+            StringContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _httpClient.PostAsync(_baseUrl + "notification", content);
             response.EnsureSuccessStatusCode();
 
             string jsonResponse = await response.Content.ReadAsStringAsync();
-            Notification createdNotification = JsonSerializer.Deserialize<Notification>(jsonResponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return createdNotification;
+            return JsonSerializer.Deserialize<NotificationDto>(jsonResponse, _jsonOptions)!;
         }
 
-        /// <inheritdoc/>
+        public async Task<bool> UpdateAsync(NotificationDto notification)
+        {
+            AddAuthorizationHeader();
+            string jsonContent = JsonSerializer.Serialize(notification, _jsonOptions);
+            StringContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _httpClient.PutAsync(_baseUrl + $"notification/{notification.Id}", content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
+
+            response.EnsureSuccessStatusCode();
+            return response.IsSuccessStatusCode;
+        }
+
         public async Task<bool> DeleteAsync(int id)
         {
             AddAuthorizationHeader();
-            HttpResponseMessage response = await this._http_client.DeleteAsync(s_base_api_url + $"notification/{id}");
+            HttpResponseMessage response = await _httpClient.DeleteAsync(_baseUrl + $"notification/{id}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                throw new KeyNotFoundException($"Notification with ID {id} was not found.");
-            }
+                return false;
 
             response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-            {
-                return true; // Deletion successful
-            }
-            return false;
-        }
-
-        public async Task<bool> UpdateAsync(Notification notification)
-        {
-            AddAuthorizationHeader();
-            StringContent jsonContent = new StringContent(
-                JsonSerializer.Serialize(notification),
-                Encoding.UTF8,
-                "application/json");
-
-            HttpResponseMessage response = await this._http_client.PostAsync(s_base_api_url + $"notification/{notification.Id}", jsonContent);
-            response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-            {
-                return true; // Update successful
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                throw new KeyNotFoundException($"Notification with ID {notification.Id} was not found.");
-            }
-            else
-            {
-                return false; // Update failed for some reason
-
-            }
+            return response.IsSuccessStatusCode;
         }
     }
 }

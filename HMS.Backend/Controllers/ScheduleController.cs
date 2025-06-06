@@ -34,6 +34,13 @@ namespace HMS.Backend.Controllers
         public async Task<IActionResult> GetAll()
         {
             var schedules = await _scheduleRepository.GetAllAsync();
+
+            var scheduleDtos = schedules.Select(s => new ScheduleDto
+            {
+                ShiftId = s.ShiftId,
+                DoctorId = s.DoctorId
+            });
+
             return Ok(schedules);
         }
 

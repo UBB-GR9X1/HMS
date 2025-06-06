@@ -1,38 +1,39 @@
-﻿using HMS.Shared.Entities;
+﻿using HMS.Shared.DTOs;
+using HMS.Shared.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HMS.Shared.Repositories.Interfaces
 {
     /// <summary>
-    /// Repository interface for Equipment entity operations.
+    /// Repository interface for Equipment DTO operations.
     /// </summary>
     public interface IEquipmentRepository
     {
         /// <summary>
         /// Gets all equipments.
         /// </summary>
-        /// <returns>List of Equipment entities.</returns>
-        Task<List<Equipment>> GetAllAsync();
+        /// <returns>List of Equipment DTOs.</returns>
+        Task<List<EquipmentDto>> GetAllAsync();
 
         /// <summary>
         /// Gets equipment by id.
         /// </summary>
         /// <param name="id">Equipment id.</param>
-        /// <returns>Equipment entity or null.</returns>
-        Task<Equipment?> GetByIdAsync(int id);
+        /// <returns>Equipment DTO or null.</returns>
+        Task<EquipmentDto?> GetByIdAsync(int id);
 
         /// <summary>
         /// Adds new equipment.
         /// </summary>
-        /// <param name="equipment">Equipment entity to add.</param>
-        Task AddAsync(Equipment equipment);
+        /// <param name="equipment">Equipment DTO to add.</param>
+        Task AddAsync(EquipmentDto equipment);
 
         /// <summary>
         /// Updates existing equipment.
         /// </summary>
-        /// <param name="equipment">Equipment entity to update.</param>
-        Task UpdateAsync(Equipment equipment);
+        /// <param name="equipment">Equipment DTO to update.</param>
+        Task UpdateAsync(EquipmentDto equipment);
 
         /// <summary>
         /// Deletes equipment by id.

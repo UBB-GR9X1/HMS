@@ -1,0 +1,55 @@
+<Window
+    x:Class="HMS.DesktopClient.Views.Doctor.DoctorHomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HMS.DesktopClient.Views.Doctor"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Doctor Home Page"
+>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Navigation -->
+        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Height="60" VerticalAlignment="Top">
+            <Grid Height="60">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- HMS Logo -->
+                <TextBlock Text="HMS" Foreground="Red" FontWeight="ExtraBlack" FontSize="20" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                <!-- All Navigation Buttons, HOME, and Profile Icon together -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,20,0">
+                    <Button Content="Patients"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Patients_Click"/>
+                    <Button Content="Appointments"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Appointments_Click"/>
+                    <Button Content="Equipments"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Equipments_Click"/>
+                    <Button Content="Rooms"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Rooms_Click"/>
+                    <Button Content="Schedule"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="Schedule_Click"/>
+                    <Button Content="Medical Records"  Background="Transparent" BorderThickness="0" FontSize="14" Foreground="Black" Click="MedicalRecords_Click"/>
+                    <Button Content="HOME" Background="Red" Foreground="White" FontWeight="Bold" Padding="10,5" BorderThickness="0" Margin="10,0,10,0" FontSize="14" Click="Home_Click"/>
+                    <Button Background="Transparent" BorderThickness="0" Padding="0" Width="32" Height="32" Click="Profile_Click">
+                        <Viewbox Width="28" Height="28" VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <!-- Head (circle) -->
+                                <Path Stroke="Red" StrokeThickness="2" Fill="Transparent"
+              Data="M12,7 A4,4 0 1 1 11.99,7 Z"/>
+                                <!-- Shoulders/body -->
+                                <Path Stroke="Red" StrokeThickness="2" Fill="Transparent"
+              Data="M5,18 Q12,14 19,18"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Frame for View Navigation -->
+        <Frame x:Name="MainFrame" Grid.Row="1"/>
+    </Grid>
+</Window>

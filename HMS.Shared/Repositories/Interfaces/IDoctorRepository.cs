@@ -1,11 +1,12 @@
-﻿using HMS.Shared.Entities;
+﻿using HMS.Shared.DTOs;
+using HMS.Shared.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HMS.Shared.Repositories.Interfaces
 {
     /// <summary>
-    /// Interface for managing Doctor entities in the data store.
+    /// Interface for managing Doctor DTOs in the data store.
     /// </summary>
     public interface IDoctorRepository
     {
@@ -13,28 +14,28 @@ namespace HMS.Shared.Repositories.Interfaces
         /// Gets all doctors asynchronously.
         /// </summary>
         /// <returns>A collection of all doctors.</returns>
-        Task<IEnumerable<Doctor>> GetAllAsync();
+        Task<IEnumerable<DoctorDto>> GetAllAsync();
 
         /// <summary>
         /// Gets a doctor by their unique identifier asynchronously.
         /// </summary>
         /// <param name="id">The unique identifier of the doctor.</param>
         /// <returns>The doctor if found, otherwise null.</returns>
-        Task<Doctor?> GetByIdAsync(int id);
+        Task<DoctorDto?> GetByIdAsync(int id);
 
         /// <summary>
         /// Adds a new doctor asynchronously.
         /// </summary>
         /// <param name="doctor">The doctor to add.</param>
         /// <returns>The added doctor.</returns>
-        Task<Doctor> AddAsync(Doctor doctor);
+        Task<DoctorDto> AddAsync(DoctorDto doctor);
 
         /// <summary>
         /// Updates an existing doctor asynchronously.
         /// </summary>
         /// <param name="doctor">The doctor with updated data.</param>
         /// <returns>True if update succeeded, false otherwise.</returns>
-        Task<bool> UpdateAsync(Doctor doctor);
+        Task<bool> UpdateAsync(DoctorDto doctor);
 
         /// <summary>
         /// Deletes a doctor by their unique identifier asynchronously.

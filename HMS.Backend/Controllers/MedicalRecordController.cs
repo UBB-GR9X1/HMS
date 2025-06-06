@@ -4,6 +4,8 @@ using HMS.Shared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HMS.Backend.Controllers
@@ -16,6 +18,7 @@ namespace HMS.Backend.Controllers
         private readonly IPatientRepository _patientRepository;
         private readonly IDoctorRepository _doctorRepository;
         private readonly IProcedureRepository _procedureRepository;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public MedicalRecordController(
             IMedicalRecordRepository medicalRecordRepository,
@@ -27,6 +30,12 @@ namespace HMS.Backend.Controllers
             _patientRepository = patientRepository;
             _doctorRepository = doctorRepository;
             _procedureRepository = procedureRepository;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
         }
 
         /// <summary>
@@ -40,7 +49,23 @@ namespace HMS.Backend.Controllers
         public async Task<IActionResult> GetAll()
         {
             var records = await _medicalRecordRepository.GetAllAsync();
-            return Ok(records);
+            return Ok(new
+            {
+                records = records.Select(r => new
+                {
+                    r.Id,
+                    r.PatientId,
+                    PatientName = r.Patient?.Name,
+                    r.DoctorId,
+                    DoctorName = r.Doctor?.Name,
+                    DoctorDepartment = r.Doctor?.Department?.Name,
+                    r.ProcedureId,
+                    ProcedureName = r.Procedure?.Name,
+                    ProcedureDepartment = r.Procedure?.Department?.Name,
+                    r.Diagnosis,
+                    r.CreatedAt
+                })
+            });
         }
 
         /// <summary>
@@ -58,7 +83,21 @@ namespace HMS.Backend.Controllers
         {
             var record = await _medicalRecordRepository.GetByIdAsync(id);
             if (record == null) return NotFound();
-            return Ok(record);
+
+            return Ok(new
+            {
+                record.Id,
+                record.PatientId,
+                PatientName = record.Patient?.Name,
+                record.DoctorId,
+                DoctorName = record.Doctor?.Name,
+                DoctorDepartment = record.Doctor?.Department?.Name,
+                record.ProcedureId,
+                ProcedureName = record.Procedure?.Name,
+                ProcedureDepartment = record.Procedure?.Department?.Name,
+                record.Diagnosis,
+                record.CreatedAt
+            });
         }
 
         /// <summary>
@@ -99,7 +138,20 @@ namespace HMS.Backend.Controllers
             };
 
             var createdRecord = await _medicalRecordRepository.AddAsync(record);
-            return CreatedAtAction(nameof(GetById), new { id = createdRecord.Id }, createdRecord);
+            return CreatedAtAction(nameof(GetById), new { id = createdRecord.Id }, new
+            {
+                createdRecord.Id,
+                createdRecord.PatientId,
+                PatientName = createdRecord.Patient?.Name,
+                createdRecord.DoctorId,
+                DoctorName = createdRecord.Doctor?.Name,
+                DoctorDepartment = createdRecord.Doctor?.Department?.Name,
+                createdRecord.ProcedureId,
+                ProcedureName = createdRecord.Procedure?.Name,
+                ProcedureDepartment = createdRecord.Procedure?.Department?.Name,
+                createdRecord.Diagnosis,
+                createdRecord.CreatedAt
+            });
         }
 
         /// <summary>
@@ -162,6 +214,35 @@ namespace HMS.Backend.Controllers
             var success = await _medicalRecordRepository.DeleteAsync(id);
             if (!success) return NotFound();
             return NoContent();
+        }
+        /// <summary>
+        /// Retrieves all medical records created by a specific doctor.
+        /// </summary>
+        /// <param name="doctorId">Doctor's ID.</param>
+        /// <returns>List of medical records for the doctor.</returns>
+        [HttpGet("by-doctor/{doctorId}")]
+        [Authorize]
+        public async Task<IActionResult> GetByDoctorId(int doctorId)
+        {
+            var records = await _medicalRecordRepository.GetAllAsync();
+            var doctorRecords = records
+                .Where(r => r.DoctorId == doctorId)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.PatientId,
+                    PatientName = r.Patient?.Name,
+                    r.DoctorId,
+                    DoctorName = r.Doctor?.Name,
+                    DoctorDepartment = r.Doctor?.Department?.Name,
+                    r.ProcedureId,
+                    ProcedureName = r.Procedure?.Name,
+                    ProcedureDepartment = r.Procedure?.Department?.Name,
+                    r.Diagnosis,
+                    r.CreatedAt
+                });
+
+            return Ok(new { records = doctorRecords });
         }
     }
 }

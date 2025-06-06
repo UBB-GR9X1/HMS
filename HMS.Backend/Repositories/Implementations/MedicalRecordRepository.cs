@@ -25,7 +25,10 @@ namespace HMS.Backend.Repositories.Implementations
             return await _context.MedicalRecords
                 .Include(m => m.Patient)
                 .Include(m => m.Doctor)
+                    .ThenInclude(d => d.Department)
                 .Include(m => m.Procedure)
+                    .ThenInclude(p => p.Department)
+                .AsNoTracking()  // This helps prevent circular reference tracking
                 .ToListAsync();
         }
 
@@ -35,7 +38,10 @@ namespace HMS.Backend.Repositories.Implementations
             return await _context.MedicalRecords
                 .Include(m => m.Patient)
                 .Include(m => m.Doctor)
+                    .ThenInclude(d => d.Department)
                 .Include(m => m.Procedure)
+                    .ThenInclude(p => p.Department)
+                .AsNoTracking()  // This helps prevent circular reference tracking
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
@@ -44,16 +50,29 @@ namespace HMS.Backend.Repositories.Implementations
         {
             _context.MedicalRecords.Add(medicalRecord);
             await _context.SaveChangesAsync();
-            return medicalRecord;
+            
+            // Reload the record with its relationships
+            return await GetByIdAsync(medicalRecord.Id);
         }
 
         /// <inheritdoc />
         public async Task<bool> UpdateAsync(MedicalRecord medicalRecord)
         {
-            var existingRecord = await _context.MedicalRecords.FindAsync(medicalRecord.Id);
+            var existingRecord = await _context.MedicalRecords
+                .Include(m => m.Patient)
+                .Include(m => m.Doctor)
+                .Include(m => m.Procedure)
+                .FirstOrDefaultAsync(m => m.Id == medicalRecord.Id);
+
             if (existingRecord == null) return false;
 
-            _context.Entry(existingRecord).CurrentValues.SetValues(medicalRecord);
+            // Update only the scalar properties
+            existingRecord.PatientId = medicalRecord.PatientId;
+            existingRecord.DoctorId = medicalRecord.DoctorId;
+            existingRecord.ProcedureId = medicalRecord.ProcedureId;
+            existingRecord.Diagnosis = medicalRecord.Diagnosis;
+            existingRecord.CreatedAt = medicalRecord.CreatedAt;
+
             await _context.SaveChangesAsync();
             return true;
         }

@@ -119,11 +119,15 @@ namespace HMS.Backend.Controllers
         [HttpGet("login")]
         [ProducesResponseType(typeof(UserDto), 200)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(401)]
         public async Task<ActionResult<UserWithTokenDto>> Login([FromQuery] string email, [FromQuery] string password)
         {
             User user = await _repository.GetByEmailAsync(email);
             if (user == null)
                 return NotFound("User not found");
+
+            if (user.Password != password)
+                return Unauthorized("Invalid password");
 
             var token = tokenProvider.Create(user.Id);
 
