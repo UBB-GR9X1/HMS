@@ -1,6 +1,12 @@
+using HMS.DesktopClient.ViewModels;
+using HMS.Shared.Proxies.Implementations;
+using HMS.Shared.Repositories.Interfaces;
+using HMS.Shared.Services.Implementations;
+using HMS.Shared.Services.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Net.Http;
 
 namespace HMS.DesktopClient.Views.Patient
 {
@@ -49,6 +55,15 @@ namespace HMS.DesktopClient.Views.Patient
         private async void Home_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Content = null;
+        }
+
+        private async void Notification_Click(object sender, RoutedEventArgs e)
+        {
+            INotificationRepository repo = new NotificationProxy(new HttpClient(), App.CurrentUser.Token);
+            INotificationService service = new NotificationService(repo);
+            NotificationViewModel viewModel = new NotificationViewModel(service, App.CurrentUser.Id);
+            var notificationPage = new NotificationPage(viewModel);
+            notificationPage.Activate();
         }
     }
 }
