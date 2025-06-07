@@ -24,7 +24,7 @@ namespace HMS.Backend.Repositories.Interfaces
         /// Adds a new Room entity.
         /// </summary>
         /// <param name="room">Room entity to add</param>
-        Task AddAsync(Room room);
+        Task<Room> AddAsync(Room room);
 
         /// <summary>
         /// Updates an existing Room entity.
